@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TMP_DIR=/tmp/build_openssl_$$
+TMP_DIR=`pwd`/build_iOS-universal
 CROSS_TOP_SIM="`xcode-select --print-path`/Platforms/iPhoneSimulator.platform/Developer"
 CROSS_SDK_SIM="iPhoneSimulator.sdk"
 
@@ -20,7 +20,7 @@ function build_for ()
 
   export CROSS_TOP="${!CROSS_TOP_ENV}"
   export CROSS_SDK="${!CROSS_SDK_ENV}"
-  ./Configure $PLATFORM "-arch $ARCH -fembed-bitcode" no-asm no-ssl3 no-comp no-hw no-engine no-async --prefix=${TMP_DIR}/${ARCH} || exit 1
+  ./Configure $PLATFORM "-arch $ARCH -fembed-bitcode" no-ssl2 no-ssl3 no-dso no-engine no-async no-shared --prefix=${TMP_DIR}/${ARCH} || exit 1
   # problem of concurrent build; make -j8
   make && make install_sw || exit 2
   unset CROSS_TOP
@@ -30,32 +30,24 @@ function build_for ()
 function pack_for ()
 {
   LIBNAME=$1
-  mkdir -p ${TMP_DIR}/lib/
+  mkdir -p ${TMP_DIR}/iOS-universal/lib/
   ${DEVROOT}/usr/bin/lipo \
 	${TMP_DIR}/x86_64/lib/lib${LIBNAME}.a \
-	${TMP_DIR}/armv7s/lib/lib${LIBNAME}.a \
+	${TMP_DIR}/armv7/lib/lib${LIBNAME}.a \
 	${TMP_DIR}/arm64/lib/lib${LIBNAME}.a \
-	-output ${TMP_DIR}/lib/lib${LIBNAME}.a -create
+	-output ${TMP_DIR}/iOS-universal/lib/lib${LIBNAME}.a -create
 }
 
-curl -O https://raw.githubusercontent.com/sinofool/build-openssl-ios/master/patch-conf.patch
-#cp ../patch-conf.patch .
+curl -O https://raw.githubusercontent.com/Roblox/build-openssl-ios/master/patch-conf.patch
 patch Configurations/10-main.conf < patch-conf.patch
 
 build_for ios64sim-cross x86_64 SIM || exit 2
-build_for ios-cross armv7s IOS || exit 4
+build_for ios-cross armv7 IOS || exit 4
 build_for ios64-cross arm64 IOS || exit 5
 
 pack_for ssl || exit 6
 pack_for crypto || exit 7
 
-cp -r ${TMP_DIR}/armv7s/include ${TMP_DIR}/
-curl -O https://raw.githubusercontent.com/sinofool/build-openssl-ios/master/patch-include.patch
-#cp ../build-openssl-ios/patch-include.patch .
-patch -p3 ${TMP_DIR}/include/openssl/opensslconf.h < patch-include.patch
-
-DFT_DIST_DIR=${HOME}/Desktop/openssl-ios-dist/
-DIST_DIR=${DIST_DIR:-$DFT_DIST_DIR}
-mkdir -p ${DIST_DIR}
-cp -r ${TMP_DIR}/include ${TMP_DIR}/lib ${DIST_DIR}
-
+cp -r ${TMP_DIR}/armv7/include ${TMP_DIR}/iOS-universal/
+curl -O https://raw.githubusercontent.com/Roblox/build-openssl-ios/master/patch-include.patch
+patch -p3 ${TMP_DIR}/iOS-universal/include/openssl/opensslconf.h < patch-include.patch
