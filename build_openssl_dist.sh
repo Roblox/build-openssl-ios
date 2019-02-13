@@ -20,7 +20,7 @@ function build_for ()
 
   export CROSS_TOP="${!CROSS_TOP_ENV}"
   export CROSS_SDK="${!CROSS_SDK_ENV}"
-  ./Configure $PLATFORM "-arch $ARCH -fembed-bitcode" no-ssl2 no-ssl3 no-dso no-engine no-async no-shared --prefix=${TMP_DIR}/${ARCH} || exit 1
+  ./Configure $PLATFORM "-arch $ARCH -fembed-bitcode -fno-omit-frame-pointer" no-ssl2 no-ssl3 no-dso no-engine no-async no-shared --prefix=${TMP_DIR}/${ARCH} || exit 1
   # problem of concurrent build; make -j8
   make && make install_sw || exit 2
   unset CROSS_TOP
