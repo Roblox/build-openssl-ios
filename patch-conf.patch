@@ -1,8 +1,14 @@
 1636a1637,1643
 >     "ios64sim-cross" => {
->         inherit_from     => [ "darwin-common", asm("no_asm") ],
+>         inherit_from     => [ "darwin-common", asm("no-asm") ],
 >         cflags           => add("-arch x86_64 -DOPENSSL_NO_ASM -mios-version-min=7.0.0 -isysroot \$(CROSS_TOP)/SDKs/\$(CROSS_SDK) -fno-common"),
 >         sys_id           => "iOS",
 >         bn_ops           => "SIXTY_FOUR_BIT_LONG RC4_CHAR",
 >         perlasm_scheme   => "ios64",
+>     },
+>     "iossim-cross" => {
+>         inherit_from     => [ "darwin-common" ],
+>         cflags           => add("-arch i386 -mios-version-min=7.0.0 -isysroot \$(CROSS_TOP)/SDKs/\$(CROSS_SDK) -fno-common"),
+>         sys_id           => "iOS",
+>         bn_ops           => "THIRTY_TWO_BIT RC4_CHAR",
 >     },

@@ -33,6 +33,7 @@ function pack_for ()
   mkdir -p ${TMP_DIR}/iOS-universal/lib/
   ${DEVROOT}/usr/bin/lipo \
 	${TMP_DIR}/x86_64/lib/lib${LIBNAME}.a \
+	${TMP_DIR}/i386/lib/lib${LIBNAME}.a \
 	${TMP_DIR}/armv7/lib/lib${LIBNAME}.a \
 	${TMP_DIR}/arm64/lib/lib${LIBNAME}.a \
 	-output ${TMP_DIR}/iOS-universal/lib/lib${LIBNAME}.a -create
@@ -42,6 +43,7 @@ curl -O https://raw.githubusercontent.com/Roblox/build-openssl-ios/master/patch-
 patch Configurations/10-main.conf < patch-conf.patch
 
 build_for ios64sim-cross x86_64 SIM || exit 2
+build_for iossim-cross i386 SIM || exit 2
 build_for ios-cross armv7 IOS || exit 4
 build_for ios64-cross arm64 IOS || exit 5
 
